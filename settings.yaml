@@ -1,0 +1,36 @@
+agent_model: gpt-4o-mini
+orchestrator_model: gpt-4o-mini
+max_attachment_size_mb: 25
+max_attachments_count: 20
+append_to_sent: true
+poll_interval_seconds: 30
+docs_vision_model: gpt-4.1-mini
+docs_vision_model_rotate: gpt-4.1
+docs_enable_vision: true
+include_raw_eml_default: true
+queue_max_items: 200
+queue_retention_days: 7
+cleanup_pre_run: false
+cleanup_post_run: false
+cleanup_targets:
+- images
+- media_for_processing
+- tables
+- processing_cache
+routing_rules:
+- name: printers-service
+  category: printers_service
+  to:
+  - x+1211093343936711@mail.asana.com
+  subject_prefix: '[Service]'
+  description: 'Запросы на ремонт и сервис принтеров, а также обслуживание, диагностика.
+
+    '
+- name: cutting-plotters
+  category: cutting_plotters
+  to:
+  - jkl@signart.ru
+  description: 'Обращения по режущим плоттерам: консультации, ремонт, ЗИП, установка.
+
+    '
+triage_instructions: "Вы — агент фильтрации и подготовки писем. Цели:\r\n1) На основе контекста письма (headers, body, Attachment analysis) определить релевантность.\r\n2) Если релевантно — сформировать черновик результата с полями compose (plain text) и краткую разметку задачи.\r\n3) Если не уверены — временно считать релевантным и создать черновик.\r\n\r\nФормат ответа — строго JSON по схеме (ComposeDecision):\r\n{\r\n  \"is_relevant\": boolean,\r\n  \"reason\": string,\r\n  \"task_markdown\": string,\r\n  \"compose\": {\r\n    \"to\": string[],\r\n    \"subject\": string,\r\n    \"body_text\": string,\r\n    \"attach_paths\": string[],\r\n    \"include_raw_eml\": boolean\r\n  }\r\n}\r\n\r\nТребования к compose:\r\n- to: использовать адреса из настроек (forward_to), если из контекста явных адресов нет.\r\n- subject: кратко и по сути запроса; без префиксов.\r\n- body_text: структурированный plain text по формату:\r\n  \"От: [отправитель]\r\n  Дата: [дата]  \r\n  Кому: [получатели исходного]\r\n  \r\n  Оборудование: [модель из письма/вложений]\r\n  Тип обращения: [ремонт/выезд/консультация/ЗИП]\r\n  Суть: [описание проблемы]\r\n  \r\n  Вложения:\r\n  - [файл]: [тип] - [краткое содержание]\"\r\n  \r\n  Используйте [Attachment analysis] для понимания, но суммаризируйте кратко.\r\n- attach_paths: использовать из предоставленного списка оригинальных вложений.\r\n- include_raw_eml: по умолчанию true (из настроек), иначе false.\r\n\r\nИспользуйте позитивный/негативный контекст ниже. Если письмо не попадает ни в одну категорию — нерелевантно.\r\n
