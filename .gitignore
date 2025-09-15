@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+monitor-all.log
+pipeline_watch.log
+pipeline_watch.pid
+
+# Local data and tmp
+/tmp/
+tmp/
+**/tmp/**
+/tables/
+/images/
+/media_for_processing/
+/processed_documents/
+**/processed_documents/**
+
+# Credentials and environment
+.env
+*.env
+/admin_mailboxes.json
+/admin_smtp.json
+/admin_queue.json
+
+# Build/Dist
+/dist/
+/build/
+
+# External tool caches
+external/**/tmp/**
+
+# Exclude working copy variant
+/mail2mail_w/
