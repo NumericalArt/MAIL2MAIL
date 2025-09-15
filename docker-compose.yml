@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  admin:
+    build: .
+    image: mail2mail:latest
+    container_name: m2m_admin
+    command: ["uvicorn", "mail2mail.admin.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      - SETTINGS_YAML=/data/settings.yaml
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET:-change-me}
+      - ADMIN_SESSION_COOKIE=${ADMIN_SESSION_COOKIE:-m2m_admin_session}
+      - ADMIN_SESSION_HTTPS_ONLY=${ADMIN_SESSION_HTTPS_ONLY:-true}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - m2m_data:/data
+      - ./settings.yaml:/data/settings.yaml:ro
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  manager:
+    image: mail2mail:latest
+    container_name: m2m_manager
+    depends_on:
+      - admin
+    command: ["python", "-m", "cli", "--account", "__default__", "monitor-all"]
+    environment:
+      - SETTINGS_YAML=/data/settings.yaml
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_STARTTLS=${SMTP_STARTTLS:-true}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_SENDER_ACCOUNT=${SMTP_SENDER_ACCOUNT:-a.service@signart.ru}
+    volumes:
+      - m2m_data:/data
+      - ./admin_mailboxes.json:/app/admin_mailboxes.json:rw
+      - ./admin_smtp.json:/app/admin_smtp.json:rw
+      - ./admin_queue.json:/app/admin_queue.json:rw
+      - ./images:/app/images:rw
+      - ./media_for_processing:/app/media_for_processing:rw
+      - ./tables:/app/tables:rw
+      - ./processed_documents:/app/processed_documents:rw
+    restart: unless-stopped
+
+volumes:
+  m2m_data:
